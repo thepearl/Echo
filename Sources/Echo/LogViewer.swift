@@ -5,11 +5,7 @@
 //  Created by Ghazi Tozri on 03/09/2024.
 
 import SwiftUI
-#if os(iOS) || os(tvOS)
 import UIKit
-#elseif os(macOS)
-import AppKit
-#endif
 
 @available(iOS 14.0, macOS 11.0, tvOS 14.0, *)
 public struct LogViewer: View {
@@ -71,12 +67,9 @@ public struct LogViewer: View {
                            selectedLogCategories: $selectedLogCategories,
                            dateRange: $dateRange)
             }
-#if os(iOS) || os(tvOS)
             .sheet(isPresented: $isExportPresented) {
                 ActivityViewController(activityItems: [logger.exportLogs()])
             }
-#endif
-
         }
         .onAppear {
             if selectedLogCategories.isEmpty {
@@ -356,7 +349,6 @@ struct SearchBar: UIViewRepresentable {
     }
 }
 
-#if os(iOS) || os(tvOS)
 struct ActivityViewController: UIViewControllerRepresentable {
     let activityItems: [Any]
     let applicationActivities: [UIActivity]? = nil
@@ -368,4 +360,3 @@ struct ActivityViewController: UIViewControllerRepresentable {
 
     func updateUIViewController(_ uiViewController: UIActivityViewController, context: UIViewControllerRepresentableContext<ActivityViewController>) {}
 }
-#endif
