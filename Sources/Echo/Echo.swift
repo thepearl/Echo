@@ -344,6 +344,7 @@ public struct Echo {
             }
         }
 
+#if os(iOS) || os(tvOS)
         private func setupNotifications() {
             NotificationCenter.default.addObserver(self, selector: #selector(applicationWillTerminate), name: UIApplication.willTerminateNotification, object: nil)
         }
@@ -352,6 +353,7 @@ public struct Echo {
             flushBuffer()
             saveToCoreData(logs)
         }
+#endif
 
         private func checkActiveTimeAndRotate() {
             guard let activeTimeRange = configuration.activeTimeRange else { return }
