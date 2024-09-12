@@ -8,7 +8,10 @@ import Foundation
 import SwiftUI
 import Combine
 import CoreData
+
+#if os(iOS) || os(tvOS) || os(watchOS)
 import UIKit
+#endif
 
 /// The main struct for the Echo logging system.
 /// It provides a centralized way to log events and manage log entries across an application.
@@ -551,6 +554,7 @@ public extension View {
     }
 }
 
+#if os(iOS) || os(tvOS)
 // MARK: - UIKit Compatibility
 
 public extension UIViewController {
@@ -572,3 +576,4 @@ public extension UIViewController {
         logger.log(.info, category: .userInterface, message: "Page disappeared: \(pageName)")
     }
 }
+#endif
