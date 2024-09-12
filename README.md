@@ -2,6 +2,25 @@
 
 Echo is a flexible and easy-to-use logging framework for Swift applications. It is made with internal testers in mind. It provides a robust solution for capturing, storing, and analyzing log data in iOS applications in order to simplify exchanges between devs and internal testers.
 
+# Table of Contents
+
+1. [Features](#features)
+2. [Requirements](#requirements)
+3. [Installation](#installation)
+   - [Swift Package Manager](#swift-package-manager)
+4. [Usage](#usage)
+   - [Basic Logging](#basic-logging)
+   - [Custom Configuration](#custom-configuration)
+5. [Configuration Options](#configuration-options)
+6. [SwiftUI Integration](#swiftui-integration)
+7. [UIKit Integration](#uikit-integration)
+8. [Built-in Log Viewer](#built-in-log-viewer)
+9. [Visualizing and Exporting Logs](#visualizing-and-exporting-logs)
+    - [In-App Log Visualization](#in-app-log-visualization)
+    - [Exporting Logs for Analysis](#exporting-logs-for-analysis)
+    - [Advanced Visualization and Analysis](#advanced-visualization-and-analysis)
+10. [License](#license)
+
 ## Features
 
 - Multiple log levels (Debug, Info, Warning, Error, Critical)
