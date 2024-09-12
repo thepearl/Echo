@@ -5,8 +5,9 @@
 //  Created by Ghazi Tozri on 03/09/2024.
 
 import SwiftUI
+import UIKit
 
-@available(iOS 14.0, *)
+@available(iOS 14.0, macOS 11.0, tvOS 14.0, *)
 public struct LogViewer: View {
     @EnvironmentObject private var logger: Echo.Logger
     @State private var searchText = ""
