@@ -1,5 +1,7 @@
 # Echo
 
+> ⚠️ **IMPORTANT**: 🚧 This package is still in development. 🚧 Please take that into consideration. 🛑 It should NOT be used in production! 🛑
+
 Echo is a flexible and easy-to-use logging framework for Swift applications. It is made with internal testers in mind. It provides a robust solution for capturing, storing, and analyzing log data in iOS applications in order to simplify exchanges between devs and internal testers.
 
 # Table of Contents
