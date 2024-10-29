@@ -105,7 +105,7 @@ struct FilledButtonStyle: ButtonStyle {
             .background(Color.blue)
             .foregroundColor(.white)
             .cornerRadius(8)
-            .scaleEffect(configuration.isPressed ? 0.95 : 1)
+            .scaleEffect(configuration.isPressed ? 0.9 : 1)
     }
 }
 
