@@ -1,0 +1,73 @@
+name: Deploy DocC Documentation
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+
+      - name: Generate Documentation
+        run: |
+          # Create docs directory if it doesn't exist
+          mkdir -p docs
+          
+          # Generate documentation
+          swift package --allow-writing-to-directory ./docs \
+            generate-documentation --target Echo \
+            --disable-indexing \
+            --transform-for-static-hosting \
+            --hosting-base-path 'Echo' \
+            --output-path ./docs
+          
+          # Create root index.html for redirect
+          cat > ./docs/index.html << EOL
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <title>Echo Documentation</title>
+              <meta charset="utf-8">
+              <meta http-equiv="refresh" content="0; url=documentation/echo/">
+              <link rel="canonical" href="documentation/echo/">
+          </head>
+          <body>
+              <h1>Echo Documentation</h1>
+              <p>Redirecting to <a href="documentation/echo/">documentation</a>...</p>
+              <script>
+                  window.location.href = "documentation/echo/";
+              </script>
+          </body>
+          </html>
+          EOL
+          
+          # Verify the structure
+          echo "Generated documentation structure:"
+          ls -R ./docs
+
+      - name: Create .nojekyll
+        run: touch ./docs/.nojekyll
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: './docs'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
