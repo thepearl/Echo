@@ -3,11 +3,11 @@ name: iOS build CI
 on:
   push:
     branches:
-      - master  # or 'main' if that's your default branch name
+      - master
+      - develop
   pull_request:
     branches:
-      - '*'  # This will run on pull requests targeting any branch
-
+      - '*'
 jobs:
   build-and-test:
     runs-on: macos-latest
