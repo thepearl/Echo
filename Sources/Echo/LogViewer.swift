@@ -9,7 +9,7 @@ import UIKit
 
 @available(iOS 14.0, macOS 11.0, tvOS 14.0, *)
 public struct LogViewer: View {
-    @EnvironmentObject private var logger: Echo.Logger
+    private var logger: Echo.Logger
     @State private var searchText = ""
     @State private var selectedLogLevels: Set<Echo.LogLevel> = Set(Echo.LogLevel.allCases)
     @State private var sortOrder: SortOrder = .descending
@@ -131,7 +131,9 @@ public struct LogViewer: View {
         }
     }
 
-    public init() {}
+    public init(logger: Echo.Logger) {
+        self.logger = logger
+    }
 }
 
 @available(iOS 14.0, *)
@@ -156,6 +158,13 @@ struct LogEntryRow: View {
                     .padding(4)
                     .background(log.level.color.opacity(0.2))
                     .cornerRadius(4)
+                if let networkDetails = log.networkDetails {
+                    Text("Status: \(networkDetails.responseStatus)")
+                        .font(.caption2)
+                        .padding(4)
+                        .background(networkDetails.responseStatus >= 200 && networkDetails.responseStatus < 300 ? Color.green.opacity(0.2) : Color.red.opacity(0.2))
+                        .cornerRadius(4)
+                }
                 Spacer()
                 Text(log.timestamp, style: .time)
                     .font(.caption2)
@@ -168,6 +177,8 @@ struct LogEntryRow: View {
 @available(iOS 14.0, *)
 struct LogDetailView: View {
     let logEntry: Echo.LogEntry
+    @State private var isResponseBodyExpanded = false
+    @State private var showingCopiedAlert = false
 
     var body: some View {
         List {
@@ -179,7 +190,6 @@ struct LogDetailView: View {
                 DetailRow(label: "Level", value: logEntry.level.rawValue)
                 DetailRow(label: "Category", value: logEntry.category.name)
                 DetailRow(label: "Timestamp", value: formatDate(logEntry.timestamp))
-                DetailRow(label: "Session ID", value: logEntry.sessionId)
             }
 
             Section(header: Text("Source")) {
@@ -187,9 +197,35 @@ struct LogDetailView: View {
                 DetailRow(label: "Function", value: logEntry.functionName)
                 DetailRow(label: "Line", value: String(logEntry.lineNumber))
             }
+
+            if let networkDetails = logEntry.networkDetails {
+                Section(header: Text("Network Details")) {
+                    DetailRow(label: "URL", value: networkDetails.url)
+                    DetailRow(label: "Method", value: networkDetails.method)
+                    DetailRow(label: "Status", value: String(networkDetails.responseStatus))
+
+                    ExpandableDetailRow(label: "Request Headers", value: networkDetails.requestHeaders.description)
+                    if let requestBody = networkDetails.requestBody {
+                        ExpandableDetailRow(label: "Request Body", value: requestBody)
+                    }
+                    ExpandableDetailRow(label: "Response Headers", value: networkDetails.responseHeaders.description)
+                    if let responseBody = networkDetails.responseBody {
+                        ExpandableDetailRow(label: "Response Body", value: responseBody, maxLines: 5)
+                        Button(action: {
+                            UIPasteboard.general.string = responseBody
+                            showingCopiedAlert = true
+                        }) {
+                            Label("Copy Response", systemImage: "doc.on.doc")
+                        }
+                    }
+                }
+            }
         }
         .listStyle(InsetGroupedListStyle())
         .navigationTitle("Log Details")
+        .alert(isPresented: $showingCopiedAlert) {
+            Alert(title: Text("Copied"), message: Text("Response body copied to clipboard"), dismissButton: .default(Text("OK")))
+        }
     }
 
     private func formatDate(_ date: Date) -> String {
@@ -211,6 +247,33 @@ struct DetailRow: View {
             Spacer()
             Text(value)
                 .lineLimit(1)
+        }
+    }
+}
+
+struct ExpandableDetailRow: View {
+    let label: String
+    let value: String
+    var maxLines: Int = 0
+
+    @State private var isExpanded = false
+
+    var body: some View {
+        VStack(alignment: .leading) {
+            HStack {
+                Text(label)
+                    .foregroundColor(.secondary)
+                Spacer()
+                Button(action: { isExpanded.toggle() }) {
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                }
+            }
+            if isExpanded {
+                Text(value)
+                    .font(.system(.body, design: .monospaced))
+                    .lineLimit(maxLines > 0 ? maxLines : nil)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
     }
 }

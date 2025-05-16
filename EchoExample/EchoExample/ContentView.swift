@@ -1,22 +1,14 @@
-//
-//  ContentView.swift
-//  EchoExample
-//
-//  Created by Ghazi Tozri on 12/09/2024.
-//
-
 import SwiftUI
 import Echo
 
 @available(iOS 14.0, *)
 struct ContentView: View {
-    @StateObject private var logger = Echo.Logger(configuration: Echo.LoggerConfiguration(
-        minimumLogLevel: .debug,
-        maxLogEntries: 1000,
-        logRotationInterval: 30 // 43200 // 12 hours
-    ))
+    @EnvironmentObject private var logger: Echo.Logger
+
     @State private var isLoading = false
     @State private var showLogViewer = false
+    @State private var isNetworkLoggingEnabled = true
+    @State private var networkLogOptions: Echo.NetworkLogOptions = .all
 
     var body: some View {
         NavigationView {
@@ -50,6 +42,8 @@ struct ContentView: View {
                         showLogViewer = true
                     }
                     .buttonStyle(FilledButtonStyle())
+                    .echoViewLifecycle(logger: logger, viewName: "ContentView Main Stack")
+                    .echoPerformance(logger: logger, viewName: "ContentView")
 
                     Button("Force Save Logs") {
                         logger.flushBuffer()
@@ -62,9 +56,11 @@ struct ContentView: View {
             .navigationBarTitleDisplayMode(.inline)
         }
         .sheet(isPresented: $showLogViewer) {
-            LogViewer().environmentObject(logger)
+            LogViewer(logger: logger)
+                .echoViewLifecycle(logger: logger, viewName: "Viewer sheet", logDisappear: true)
         }
         .onAppear {
+            logger.enableNetworkLogging()
             logger.log(.info, category: .lifecycle, message: "ContentView appeared")
         }
     }
@@ -80,15 +76,25 @@ struct ContentView: View {
         isLoading = true
         logger.log(.info, category: .network, message: "Starting API call to /users")
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            let success = Bool.random()
-            if success {
-                logger.log(.info, category: .network, message: "API call to /users succeeded")
-            } else {
-                logger.log(.error, category: .network, message: "API call to /users failed with status code 404")
-            }
+        let urlString = "https://jsonplaceholder.typicode.com/users/1"
+        guard let url = URL(string: urlString) else {
+            logger.log(.error, category: .network, message: "Invalid URL")
             isLoading = false
+            return
         }
+
+        let session = URLSession(configuration: Echo.urlSessionConfiguration())
+        session.dataTask(with: url) { data, response, error in
+            DispatchQueue.main.async {
+                isLoading = false
+                if let error = error {
+                    logger.log(.error, category: .network, message: "API call failed: \(error.localizedDescription)")
+                } else if let httpResponse = response as? HTTPURLResponse {
+                    logger.log(.info, category: .network, message: "API call succeeded with status code: \(httpResponse.statusCode)")
+                }
+            }
+        }
+        .resume()
     }
 }
 
@@ -99,7 +105,7 @@ struct FilledButtonStyle: ButtonStyle {
             .background(Color.blue)
             .foregroundColor(.white)
             .cornerRadius(8)
-            .scaleEffect(configuration.isPressed ? 0.95 : 1)
+            .scaleEffect(configuration.isPressed ? 0.9 : 1)
     }
 }
 
