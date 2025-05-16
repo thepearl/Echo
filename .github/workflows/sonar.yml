@@ -33,7 +33,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           ./sonar-scanner-4.8.0.2856-linux/bin/sonar-scanner \
-            -Dsonar.projectKey=my-swift-app \
+            -Dsonar.projectKey=Echo \
             -Dsonar.sources=. \
             -Dsonar.host.url=$SONAR_HOST_URL \
             -Dsonar.login=$SONAR_TOKEN
